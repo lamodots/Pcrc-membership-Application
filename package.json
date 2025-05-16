@@ -1,0 +1,55 @@
+{
+  "name": "pcrc-membership-application",
+  "version": "1.0.0",
+  "description": "REST API for An all-in-one platform connecting photographers to a vibrant community, professional opportunities, and exclusive resources. This membership application is designed for photographers of all levels to showcase their work, expand their skills, and connect with potential clients and collaborators.",
+  "main": "index.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server/src/index.js",
+    "build": "npm install && npm --prefix client install  && npm --prefix client run build",
+    "server": "nodemon server/src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lamodots/Photographers-Association-Membership-Application.git"
+  },
+  "keywords": [
+    "LASPPAN",
+    "memebership",
+    "application"
+  ],
+  "author": "lamodot",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/lamodots/Photographers-Association-Membership-Application/issues"
+  },
+  "homepage": "https://github.com/lamodots/Photographers-Association-Membership-Application#readme",
+  "dependencies": {
+    "@json2csv/plainjs": "^7.0.6",
+    "@sendgrid/mail": "^8.1.4",
+    "axios": "^1.7.9",
+    "bcryptjs": "^2.4.3",
+    "cloudinary": "^2.5.1",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "express-fileupload": "^1.5.1",
+    "googleapis": "^148.0.0",
+    "helmet": "^8.0.0",
+    "http-status-codes": "^2.3.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.8.3",
+    "morgan": "^1.10.0",
+    "node-cron": "^3.0.3",
+    "node-fetch": "^3.3.2",
+    "nodemailer": "^6.9.16",
+    "qrcode": "^1.5.4",
+    "uuid": "^11.1.0",
+    "yup": "^1.4.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.7"
+  }
+}

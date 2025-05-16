@@ -1,0 +1,141 @@
+const { StatusCodes } = require("http-status-codes");
+const cloudinary = require("cloudinary").v2;
+const crypto = require("crypto");
+const AdsModel = require("../../models/admin/advertismentModel");
+async function createAdsController(req, res) {
+  const accepteableFile = ["jpeg", "jpg", "gif", "png"];
+  const topImage = req.files.topImage;
+  const bottomLeftImage = req.files.bottomLeftImage;
+  const bottomRightImage = req.files.bottomRightImage;
+
+  if (!accepteableFile.includes(topImage.name.split(".")[1])) {
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      success: false,
+      message: "File type not acceptable in Top Image",
+    });
+  }
+  if (!accepteableFile.includes(bottomLeftImage.name.split(".")[1])) {
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      success: false,
+      message: "File type not acceptable in Bottom Left Image",
+    });
+  }
+  if (!accepteableFile.includes(bottomRightImage.name.split(".")[1])) {
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      success: false,
+      message: "File type not acceptable in Bottom Right Image",
+    });
+  }
+  // move temp image to cloudinary and return each imagelet
+  // ensure image with space can be uploaded
+  /**TOP IMAGE */
+  let topImageFilename = topImage.name;
+  if (topImage.name.includes(" ")) {
+    topImageFilename = topImage.name.split(" ").join("");
+  }
+  const topImageDisplayName = `${topImageFilename}-${crypto
+    .randomBytes(8)
+    .toString("hex")}`;
+
+  /**BOTTOMLEFT IMAGE */
+  let bottomLeftImageFilename = bottomLeftImage.name;
+  if (bottomLeftImage.name.includes(" ")) {
+    bottomLeftImageFilename = bottomLeftImage.name.split(" ").join("");
+  }
+  /**BOTTOMRIGHTIMAGE */
+  let bottomRightImageFilename;
+  if (bottomRightImage.name.includes(" ")) {
+    bottomRightImageFilename = bottomRightImage.name.split(" ").join("");
+  }
+  try {
+    const topImageCloudinary = await cloudinary.uploader.upload(
+      topImage.tempFilePath,
+      {
+        use_filename: true,
+        folder: "ads-photo",
+        public_id: topImageDisplayName,
+      }
+    );
+
+    const bottomLeftImageFilenameDisplayName = `${bottomLeftImageFilename}-${crypto
+      .randomBytes(8)
+      .toString("hex")}`;
+    const bottomLeftImageFilenameCloudinary = await cloudinary.uploader.upload(
+      bottomLeftImage.tempFilePath,
+      {
+        use_filename: true,
+        folder: "ads-photo",
+        public_id: bottomLeftImageFilenameDisplayName,
+      }
+    );
+
+    const bottomRightImageFilenameDisplayName = `${bottomRightImageFilename}-${crypto
+      .randomBytes(8)
+      .toString("hex")}`;
+    const bottomRightImageFilenameCloudinary = await cloudinary.uploader.upload(
+      bottomRightImage.tempFilePath,
+      {
+        use_filename: true,
+        folder: "ads-photo",
+        public_id: bottomRightImageFilenameDisplayName,
+      }
+    );
+    // save data to database
+    const newAdData = {
+      ...req.body,
+      topImage: topImageCloudinary.secure_url,
+      bottomLeftImage: bottomLeftImageFilenameCloudinary.secure_url,
+      bottomRightImage: bottomRightImageFilenameCloudinary.secure_url,
+    };
+
+    // Replace the old ad with the new one
+    // If no record exists, the upsert: true option creates a new record.
+
+    const placedAds = await AdsModel.findOneAndUpdate(
+      {}, // Empty filter matches any existing record
+      newAdData, // New ad data to replace the old one
+      { upsert: true, new: true } // Create a new record if none exists, return the updated record
+    );
+
+    res.status(StatusCodes.OK).json({
+      sucess: true,
+      message: "Ads created successfully",
+      data: placedAds,
+    });
+  } catch (error) {
+    console.error("Error uploading files or saving ads:", error);
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: "An error occurred while creating the ads.",
+    });
+  }
+}
+
+async function getAdsController(req, res) {
+  try {
+    const ads = await AdsModel.find({}).select("-__v");
+
+    if (!ads) {
+      throw Error("Failed to get ads");
+    }
+
+    res.status(StatusCodes.OK).json({
+      success: true,
+      data: ads,
+    });
+  } catch (error) {
+    console.error("Error getting ads:", error);
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: "An error occurred while creating the ads.",
+    });
+  }
+}
+async function editAdsController(req, res) {
+  console.log(req);
+  res
+    .status(StatusCodes.OK)
+    .json({ success: true, message: "Ads edited successfully" });
+}
+
+module.exports = { createAdsController, editAdsController, getAdsController };
